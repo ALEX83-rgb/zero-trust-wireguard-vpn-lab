@@ -68,25 +68,21 @@ docker exec client-a ping -c 5 172.28.2.10
 
 3 of 3 pings returned (0% loss) from Site A to Site B, and `wg show` reports a recent handshake with the peer restricted to `10.10.10.2/32, 172.28.2.0/24`.
 
-![tunnel handshake](screenshots/01-tunnel-handshake.png)
 
 **2. Zero-trust firewall rules on the gateway**
 
 `FORWARD` policy is `DROP`, with an explicit Telnet drop, stateful `RELATED,ESTABLISHED` accept, and ICMP plus TCP 22/80/443/8080 allowed only toward `wg0`.
 
-![iptables rules](screenshots/02-iptables-rules.png)
 
 **3. Policy enforcement: Telnet blocked, HTTP-alt allowed**
 
 The connection to port 23 timed out while port 8080 succeeded. The Telnet `DROP` rule counter shows the blocked packets.
 
-![firewall test](screenshots/03-firewall-test.png)
 
 **4. Traffic generation for the packet capture**
 
 Continuous ping from `client-a` to `client-b` (8/8 replies) used as the traffic source while capturing on the gateway.
 
-![ping traffic](screenshots/04-ping-traffic.png)
 
 ## Encryption verification
 
