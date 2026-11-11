@@ -1,0 +1,3 @@
+gw_a/wg0.conf
+gw_b/wg0.conf
+*.key

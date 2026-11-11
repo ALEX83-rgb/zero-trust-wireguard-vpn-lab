@@ -1,0 +1,49 @@
+networks:
+  transit:
+    ipam:
+      config: [{subnet: 172.28.0.0/24}]
+  site_a_net:
+    ipam:
+      config: [{subnet: 172.28.1.0/24}]
+  site_b_net:
+    ipam:
+      config: [{subnet: 172.28.2.0/24}]
+
+services:
+  vpn_gateway_a:
+    image: alpine:3.20
+    container_name: vpn-gateway-a
+    cap_add: [NET_ADMIN]
+    sysctls: [net.ipv4.ip_forward=1]
+    volumes: ["./gw_a:/etc/wireguard"]
+    command: sh -c "apk add --no-cache wireguard-tools iptables tcpdump && wg-quick up wg0 && sleep infinity"
+    networks:
+      transit:    {ipv4_address: 172.28.0.2}
+      site_a_net: {ipv4_address: 172.28.1.254}
+
+  vpn_gateway_b:
+    image: alpine:3.20
+    container_name: vpn-gateway-b
+    cap_add: [NET_ADMIN]
+    sysctls: [net.ipv4.ip_forward=1]
+    volumes: ["./gw_b:/etc/wireguard"]
+    command: sh -c "apk add --no-cache wireguard-tools iptables tcpdump && wg-quick up wg0 && sleep infinity"
+    networks:
+      transit:    {ipv4_address: 172.28.0.3}
+      site_b_net: {ipv4_address: 172.28.2.254}
+
+  client_a:
+    image: alpine:3.20
+    container_name: client-a
+    cap_add: [NET_ADMIN]
+    command: sh -c "apk add --no-cache netcat-openbsd && ip route add 172.28.2.0/24 via 172.28.1.254 && sleep infinity"
+    networks:
+      site_a_net: {ipv4_address: 172.28.1.10}
+
+  client_b:
+    image: alpine:3.20
+    container_name: client-b
+    cap_add: [NET_ADMIN]
+    command: sh -c "apk add --no-cache netcat-openbsd && ip route add 172.28.1.0/24 via 172.28.2.254 && sleep infinity"
+    networks:
+      site_b_net: {ipv4_address: 172.28.2.10}
